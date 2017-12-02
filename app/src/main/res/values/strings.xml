@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">校园卡信息</string>
+    <string name="tap">贴上你的校园卡</string>
+    <string name="title_home">读卡</string>
+    <string name="no_nfc">抱歉，你的设备不支持NFC</string>
+    <string name="disabled_nfc">请打开你的设备的NFC功能哟~</string>
+    <string name="detected_card">检测到ISO-14443卡片：</string>
+    <string name="not_isodep">检测到非智能卡，请重试</string>
+    <string name="reading">正在读卡，请稍后......</string>
+    <string name="no1002">找不到1002文件区域！</string>
+    <string name="no_purse_rec">钱包记录不存在！</string>
+    <string name="no1002_rec_0x6">没有找到直饮水控区域！（可能这位仁兄不喜欢喝开水）</string>
+    <string name="no1002_bin_0x17">没有找到持卡人信息区域！</string>
+    <string name="unknown_card_type">不知道这是什么卡哦~ 我会尝试读取的~</string>
+    <string name="title_dashboard">历史记录</string>
+    <string name="title_notifications">设置</string>
+</resources>
