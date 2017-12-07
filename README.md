@@ -1,2 +1,19 @@
 # cardInfo
-An under-developing android app to get some information from the smart cards distributed by the universities in Guangzhou
+
+一个用于读取一些智能卡的安卓程序
+
+## 目前支持读取的卡片
+
+### 金龙卡（中大、华工在用） `AID编号：1002`
+
+* 可以读取卡号、持卡人姓名、电子现金余额、学号、有效期、身份证号
+
+* 其中 华南理工大学校园卡 还可以读取直饮水控余额和医院电脑号
+
+### 广州大学城一卡通 `AID名称：DXC.PAY01`
+
+* 可以读取卡号、学校、上次消费金额和时间、学号
+
+# License
+
+GPLv3
