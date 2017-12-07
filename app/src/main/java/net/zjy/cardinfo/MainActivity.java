@@ -1,7 +1,6 @@
 package net.zjy.cardinfo;
 
 import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.nfc.NfcAdapter;
@@ -19,12 +18,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import net.zjy.cardinfo.ScutCard;
-import net.zjy.cardinfo.CommonCard;
-
-import java.nio.charset.Charset;
-import java.util.Arrays;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -124,26 +117,42 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void readInfo(IsoDep iso) {
-        String cardType = "";
         try {
-            cardType = commonCard.getCardType(iso);
+            CommonCard c;
+            String basicInfo = "";
 
-
-            // CommonCard c;
-            if (cardType.equals("SCUTCARD00000001")) {
-                 ScutCard c = new ScutCard(mVerboseInfo, this, commonCard);
-                 mBasicInfo.setText(Html.fromHtml(c.getGeneralInfo(iso)));
-            } else if (cardType.equals("SYSUCARD00000001")) {
-                SysuCard c = new SysuCard(mVerboseInfo, this, commonCard);
-                mBasicInfo.setText(Html.fromHtml(c.getGeneralInfo(iso)));
-            } else {
-                commonCard.addVerbose(getString(R.string.unknown_card_type), "#913e1c");
-                mBasicInfo.setText(Html.fromHtml("<h1><font color=\"#ff0ff0\"><big>Nothing to read...</big></font></h1>"));
+            // 尝试读取金龙卡
+            c = new JinLongCard(mVerboseInfo, this);
+            if (c.selectAID(iso) != null) {
+                JinLongCard j = new JinLongCard(mVerboseInfo, this);
+                String cardType = j.getCardType(j.selectAID(iso));
+                if (cardType.substring(0, 8).equals("SCUTCARD")) { // 尝试读取华工卡
+                    j = new SCUTCard(mVerboseInfo, this);
+                }
+                basicInfo = j.getGeneralInfo(iso);
+                mBasicInfo.setText(Html.fromHtml(basicInfo));
+                return;
             }
+
+            // 尝试读取广州大学城一卡通
+            c = new HEMCCard(mVerboseInfo, this);
+            if (c.selectAID(iso) != null) {
+                //HEMCCard h = new HEMCCard(mVerboseInfo, this);
+                basicInfo = c.getGeneralInfo(iso);
+                mBasicInfo.setText(Html.fromHtml(basicInfo));
+                return;
+            }
+
+            // 尝试读取羊城通
+            c = new YangChengTong(mVerboseInfo, this);
+            // TODO
+
+            // 不知道是啥卡
+            mBasicInfo.setText(Html.fromHtml("<h1><font color=\"#ff0f0f\"><big>不知道是什么卡 TAT</big></font></h1>"));
 
         } catch (Exception ex) {
             commonCard.addVerbose(ex.toString(), "#ff0000");
-            mBasicInfo.setText(Html.fromHtml("<h1><font color=\"#ff0ff0\"><big>Oops...</big></font></h1>"));
+            mBasicInfo.setText(Html.fromHtml("<h1><font color=\"#ff0ff0\"><big>Oops...程序出错啦</big></font></h1>"));
         }
     }
 
@@ -158,6 +167,8 @@ public class MainActivity extends AppCompatActivity {
             IsoDep iso = IsoDep.get(tag);
             if (iso == null) {
                 commonCard.addVerbose(getString(R.string.not_isodep), "#ff0000");
+                mBasicInfo.setText(Html.fromHtml(
+                        "<h1><font color=\"#ff0f0f\">" + getString(R.string.not_isodep) + "</big></font></h1>"));
                 return;
             }
 
@@ -166,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
             //mTextMessage.append("\n" + getString(R.string.reading));
 
         } catch (Exception ex) {
-            Toast.makeText(this, ex.getStackTrace().toString(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, ex.toString(), Toast.LENGTH_LONG).show();
         }
     }
 

@@ -13,13 +13,11 @@ import java.util.Arrays;
 
 public class CommonCard {
     public static String verbose; protected TextView mVerboseInfo; protected Context mContext;
-    protected Exception No1002, NoPurseRecord;
-    public static byte[] SELECT_1001 = {0x00, (byte) 0xA4, 0x00, 0x00, 0x02, 0x10, 0x01, 0x00};
-    public static byte[] SELECT_1002 = {0x00, (byte) 0xA4, 0x00, 0x00, 0x02, 0x10, 0x02, 0x00};
-    public static byte[] SELECT_1PAY = {0x00, (byte) 0xA4, 0x00, 0x00, 0x02, 0x3F, 0x00, 0x00};
+    public Exception No1002, NoPurseRecord;
     public static byte[] GET_BALANCE = {(byte) 0x80, 0x5C, 0x00, 0x02, 0x04};
 
     public static int hex2Dec(byte in) {
+        if (in < 0) return (in & 0xFF) / 16 * 10 + (in & 0xFF) % 16;
         return in / 16 * 10 + in % 16;
     }
 
@@ -28,7 +26,7 @@ public class CommonCard {
     }
 
     public CommonCard(TextView mVerboseInfo, Context mContext) {
-        verbose = "";
+        //verbose = "";
         this.mVerboseInfo = mVerboseInfo; this.mContext = mContext;
         No1002 = new Exception(mContext.getString(R.string.no1002));
         NoPurseRecord = new Exception(mContext.getString(R.string.no_purse_rec));
@@ -91,35 +89,62 @@ public class CommonCard {
             r = iso.transceive(to_send);
             addVerbose("[RECV]  " + byte2Str(r, ' '), "#00ff00");
         } catch (Exception ex) {
-            addVerbose(ex.getStackTrace().toString(), "#604f69");
+            addVerbose(ex.toString(), "#604f69");
             r = new byte[1]; //XXX
         }
         return r;
     }
 
-    public byte[] select_1002(IsoDep iso) throws Exception {
+    public byte[] selectFile(IsoDep iso, byte i1, byte i2) {
         try {
-            byte[] t = sendAPDU(iso, SELECT_1002);
-            if (t.length < 3) throw No1002;
+            byte[] s = {0x00, (byte) 0xA4, 0x00, 0x00, 0x02, i1, i2, 0x00};
+            byte[] t = sendAPDU(iso, s);
+            //if (t.length < 3) throw new Exception(mContext.getString(R.string.no_such_file) + i1 + " " + i2);
+            return t;
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    public byte[] selectFile(IsoDep iso, String identifier) {
+        try {
+            if (identifier.length() > 256) throw new Exception(mContext.getString(R.string.fi_too_long));
+            byte[] s = {0x00, (byte) 0xA4, 0x04, 0x00, (byte) identifier.length()/* Lc field*/};
+            byte[] ss = new byte[6 + identifier.length()];
+            for (int i = 0; i < 5; i++) {
+                ss[i] = s[i]; // 把基础指令拷过来
+            }
+            byte[] iden = identifier.getBytes();
+            for (int i = 0; i < iden.length; i++) {
+                ss[5 + i] = iden[i]; // 拷贝AID
+            }
+            ss[5 + iden.length] = 0; // Le Filed
+            byte[] t = sendAPDU(iso, ss);
+            //if (t.length < 3) throw new Exception(mContext.getString(R.string.no_such_file) + identifier);
+            return t;
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    public byte[] readBinary(IsoDep iso, byte sfi) throws Exception {
+        try {
+            byte[] s = {0x00, (byte) 0xb0, (byte) (0x80 + sfi), 0x00, 0x00};
+            byte[] t = sendAPDU(iso, s);
+            if (t.length < 3) throw new Exception(mContext.getString(R.string.no_such_rec) + sfi);
             return t;
         } catch (Exception ex) {
             throw ex;
         }
     }
 
-    public String getCardType(byte[] zone_1002) {
-        byte[] t = Arrays.copyOfRange(zone_1002, 0x04, 0x14);
-        return new String(t);
-    }
-
-    public String getCardType(IsoDep iso) throws Exception {
-        byte[] t;
+    public byte[] readRecord(IsoDep iso, byte sfi) throws Exception {
         try {
-            t = select_1002(iso);
-            addVerbose(getCardType(t), "#ff0f0f");
-            return getCardType(t);
+            byte[] s = {0x00, (byte) 0xb2, (byte) ((sfi << 3) + 4), 0x00, 0x00};
+            byte[] t = sendAPDU(iso, s);
+            if (t.length < 3) throw new Exception(mContext.getString(R.string.no_such_rec) + sfi);
+            return t;
         } catch (Exception ex) {
-            //addVerbose(mContext.getString(R.string.no1002), "#ff0000"); // 没有1002文件区域
             throw ex;
         }
     }
@@ -134,6 +159,11 @@ public class CommonCard {
         }
     }
 
+    public byte[] selectAID(IsoDep iso) {
+        return null;
+    }
 
-
+    public String getGeneralInfo(IsoDep iso) throws Exception {
+        return null;
+    }
 }
