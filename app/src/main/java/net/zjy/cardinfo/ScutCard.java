@@ -77,7 +77,7 @@ public class SCUTCard extends JinLongCard {
             t = fetchBoiledWaterInfo(iso);
             bwBalance = getBoiledWaterBalance(t);
         } catch (Exception ex) {
-            throw ex;
+            // 不喝开水也无妨
         }
         // 获取持卡人基本信息
         try {

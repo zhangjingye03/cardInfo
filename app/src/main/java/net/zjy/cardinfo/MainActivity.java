@@ -65,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
         mVerboseInfo = (TextView) findViewById(R.id.verboseInfo);
         mVerboseInfo.setMovementMethod(new ScrollingMovementMethod());
         mBasicInfo = (TextView) findViewById(R.id.basicInfo);
+        mBasicInfo.setMovementMethod(new ScrollingMovementMethod());
         //verbose = "";
         commonCard = new CommonCard(mVerboseInfo, this);
         /*
@@ -120,35 +121,44 @@ public class MainActivity extends AppCompatActivity {
         try {
             CommonCard c;
             String basicInfo = "";
+            boolean flag = false;
 
             // 尝试读取金龙卡
             c = new JinLongCard(mVerboseInfo, this);
             if (c.selectAID(iso) != null) {
+                flag = true;
                 JinLongCard j = new JinLongCard(mVerboseInfo, this);
+                Toast.makeText(this, "金龙卡", Toast.LENGTH_LONG).show();
                 String cardType = j.getCardType(j.selectAID(iso));
                 if (cardType.substring(0, 8).equals("SCUTCARD")) { // 尝试读取华工卡
                     j = new SCUTCard(mVerboseInfo, this);
                 }
-                basicInfo = j.getGeneralInfo(iso);
-                mBasicInfo.setText(Html.fromHtml(basicInfo));
-                return;
+                basicInfo += j.getGeneralInfo(iso) + "======================";
+                // return;
             }
 
             // 尝试读取广州大学城一卡通
             c = new HEMCCard(mVerboseInfo, this);
             if (c.selectAID(iso) != null) {
+                flag = true;
+                Toast.makeText(this, "大学城一卡通", Toast.LENGTH_LONG).show();
                 //HEMCCard h = new HEMCCard(mVerboseInfo, this);
-                basicInfo = c.getGeneralInfo(iso);
-                mBasicInfo.setText(Html.fromHtml(basicInfo));
-                return;
+                basicInfo += c.getGeneralInfo(iso) + "======================";
+                // return;
             }
 
             // 尝试读取羊城通
             c = new YangChengTong(mVerboseInfo, this);
-            // TODO
+            if (c.selectAID(iso) != null) {
+                flag = true;
+                Toast.makeText(this, "羊城通", Toast.LENGTH_LONG).show();
+                basicInfo += c.getGeneralInfo(iso) + "======================";
+            }
 
-            // 不知道是啥卡
-            mBasicInfo.setText(Html.fromHtml("<h1><font color=\"#ff0f0f\"><big>不知道是什么卡 TAT</big></font></h1>"));
+            if (flag)
+                mBasicInfo.setText(Html.fromHtml(basicInfo));
+            else // 不知道是什么卡
+                mBasicInfo.setText(Html.fromHtml("<h1><font color=\"#ff0f0f\"><big>不知道是什么卡 TAT</big></font></h1>"));
 
         } catch (Exception ex) {
             commonCard.addVerbose(ex.toString(), "#ff0000");

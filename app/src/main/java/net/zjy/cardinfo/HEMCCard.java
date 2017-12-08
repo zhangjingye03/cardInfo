@@ -84,6 +84,12 @@ public class HEMCCard extends CommonCard {
     }
 
     public String getSchoolId(byte[] t) {
+        // 22 28
+        byte[] schoolId = Arrays.copyOfRange(t, 0x2e, 0x2f);
+        return new String(schoolId);
+    }
+
+    public String getSchoolId2(byte[] t) {
         byte[] schoolId = Arrays.copyOfRange(t, 0x22, 0x28);
         return new String(schoolId);
     }
@@ -92,7 +98,7 @@ public class HEMCCard extends CommonCard {
         byte[] t;
         int cardNum = 0;
         float balance = 0, lastPurchaseValue = 0;
-        String nameGBK = "", ownerNumber = "", lastPurchaseDate = "", schoolId = "";
+        String nameGBK = "", ownerNumber = "", lastPurchaseDate = "", schoolId = "", schoolId2 = "";
         // 选择DXC.PAY01区域
         try {
             t = selectAID(iso);
@@ -113,6 +119,7 @@ public class HEMCCard extends CommonCard {
             nameGBK = getOwnerName(t);
             ownerNumber = getOwnerNumber(t);
             schoolId = getSchoolId(t);
+            schoolId2 = getSchoolId2(t);
             cardNum = getCardNum(t);
         } catch (Exception ex) {
             throw ex;
@@ -127,8 +134,8 @@ public class HEMCCard extends CommonCard {
         }
         // 汇总成html
         String h = "<h1><font color=\"#ff8000\"><big>" + nameGBK + " - " +
-                Schools.getSchoolNameByHEMCId(schoolId) + "(" + schoolId + ")</big></font></h1>";
-        h += "<h3>电子现金 余额：" + balance + "（尚且不准）</h3>";
+                Schools.getSchoolNameByHEMCId(schoolId) + "(" + schoolId2 + ")</big></font></h1>";
+        h += "<h3>电子现金余额：" + balance + "（尚且不准）</h3>";
         h += "<h3>上次消费金额：" + lastPurchaseValue + "</h3>";
         h += "<h3>上次消费时间：" + lastPurchaseDate + "</h3>";
         h += "<h5>学号：" + ownerNumber + "</h5>";
